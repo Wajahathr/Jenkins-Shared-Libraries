@@ -1,54 +1,42 @@
-#!/usr/bin/env groovy
-
-/**
- * Update Kubernetes manifests with new image tags
- */
 def call(Map config = [:]) {
-    def imageTag = config.imageTag ?: error("Image tag is required")
-    def manifestsPath = config.manifestsPath ?: 'kubernetes'
+    // 1. Parameters receive kar rahe hain (agar koi pass na kare toh error aayega ya default set hoga)
+    def imageFullName = config.imageFullName ?: error("Full image name (e.g., wajahathr/django-notes-app) is required")
+    def imageTag = config.imageTag ?: 'latest'
+    def manifestsPath = config.manifestsPath ?: 'kubernetes' 
+    def deploymentFile = config.deploymentFile ?: 'deployment.yaml'
     def gitCredentials = config.gitCredentials ?: 'github-credentials'
-    def gitUserName = config.gitUserName ?: 'Jenkins CI'
-    def gitUserEmail = config.gitUserEmail ?: 'jenkins@example.com'
+    def gitRepoUrl = config.gitRepoUrl ?: error("Git repository URL is required")
+    def gitBranch = config.gitBranch ?: 'main'
     
-    echo "Updating Kubernetes manifests with image tag: ${imageTag}"
+    echo "Updating Kubernetes manifest in ${manifestsPath}/${deploymentFile} with image: ${imageFullName}:${imageTag}"
     
     withCredentials([usernamePassword(
         credentialsId: gitCredentials,
         usernameVariable: 'GIT_USERNAME',
         passwordVariable: 'GIT_PASSWORD'
     )]) {
-        // Configure Git
         sh """
-            git config user.name "${gitUserName}"
-            git config user.email "${gitUserEmail}"
-        """
-        
-        // Update deployment manifests with new image tags - using proper Linux sed syntax
-        sh """
-            # Update main application deployment - note the correct image name is trainwithshubham/easyshop-app
-            sed -i "s|image: trainwithshubham/easyshop-app:.*|image: trainwithshubham/easyshop-app:${imageTag}|g" ${manifestsPath}/08-easyshop-deployment.yaml
+            # Git configure karna
+            git config user.name "Jenkins CI"
+            git config user.email "jenkins@cicd.com"
             
-            # Update migration job if it exists
-            if [ -f "${manifestsPath}/12-migration-job.yaml" ]; then
-                sed -i "s|image: trainwithshubham/easyshop-migration:.*|image: trainwithshubham/easyshop-migration:${imageTag}|g" ${manifestsPath}/12-migration-job.yaml
-            fi
+            # Sed command ab totally dynamic hai. Yeh aapke image name ko dhoondh kar uska tag update karegi.
+            sed -i "s|image: ${imageFullName}:.*|image: ${imageFullName}:${imageTag}|g" ${manifestsPath}/${deploymentFile}
             
-            # Ensure ingress is using the correct domain
-            if [ -f "${manifestsPath}/10-ingress.yaml" ]; then
-                sed -i "s|host: .*|host: easyshop.letsdeployit.com|g" ${manifestsPath}/10-ingress.yaml
-            fi
-            
-            # Check for changes
+            # Check karte hain ke yaml file mein waqai koi change aaya hai ya nahi
             if git diff --quiet; then
-                echo "No changes to commit"
+                echo "No changes to commit. Manifest is already up to date."
             else
-                # Commit and push changes
-                git add ${manifestsPath}/*.yaml
-                git commit -m "Update image tags to ${imageTag} and ensure correct domain [ci skip]"
+                echo "Changes detected. Committing and pushing back to GitHub..."
+                git add ${manifestsPath}/${deploymentFile}
+                git commit -m "Auto-update image tag to ${imageTag} [ci skip]"
                 
-                # Set up credentials for push
-                git remote set-url origin https://\${GIT_USERNAME}:\${GIT_PASSWORD}@github.com/LondheShubham153/tws-e-commerce-app.git
-                git push origin HEAD:\${GIT_BRANCH}
+                # Git URL se 'https://' hata kar usme credentials inject kar rahe hain taake secure push ho sake
+                REPO_URL_WITHOUT_HTTPS=\$(echo ${gitRepoUrl} | sed 's|https://||')
+                git remote set-url origin https://\${GIT_USERNAME}:\${GIT_PASSWORD}@\${REPO_URL_WITHOUT_HTTPS}
+                
+                # Changes ko wapas repo par push karna
+                git push origin HEAD:${gitBranch}
             fi
         """
     }
