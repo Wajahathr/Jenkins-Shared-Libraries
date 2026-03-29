@@ -13,7 +13,8 @@ Pulls code from the specified Git repository.
 ```groovy
 code_checkout('[https://github.com/your-username/your-repo.git](https://github.com/your-username/your-repo.git)', 'main')
 
-2. **Docker Operations**
+2. Docker Operations
+_________________________________________________________________
 
 docker_build(Map config)
 Builds a Docker image.
@@ -24,6 +25,7 @@ docker_build(
     dockerfile: 'Dockerfile', // Optional
     context: '.' // Optional
 )
+___________________________________________________________________
 
 docker_push(Map config)
 Pushes the built image to Docker Hub.
@@ -33,34 +35,43 @@ docker_push(
     imageTag: 'latest',
     credentials: 'docker-hub-credentials-id'
 )
+____________________________________________________________________
 
 docker_compose()
 Deploys the application using docker compose (downs old containers and brings up new ones in detached mode).
 
 docker_compose()
+_____________________________________________________________________
 
 3. Security & Code Quality (DevSecOps)
+
+______________________________________________________________________
 
 sonarqube_analysis(String SonarQubeAPI, String Projectname, String ProjectKey)
 Runs SonarQube code quality analysis. (Requires SonarQube environment configured in Jenkins).
 
 sonarqube_analysis('sonar-server', 'MyProject', 'my-project-key')
 
+_______________________________________________________________________
+
 trivy_scan()
 Scans the file system for vulnerabilities using Trivy.
 
 trivy_scan()
+
+_______________________________________________________________________
 
 owasp_dependency()
 Runs OWASP Dependency-Check to find vulnerable dependencies.
 
 owasp_dependency()
 
+________________________________________________________________________
+
 4. Kubernetes Operations
 update_k8s_manifests(Map config)
 Updates the image tag in Kubernetes deployment YAML files and pushes the changes back to GitHub.
 
-Groovy
 update_k8s_manifests(
     imageFullName: 'your-dockerhub-user/app-name',
     imageTag: env.BUILD_NUMBER,
@@ -69,27 +80,31 @@ update_k8s_manifests(
     gitCredentials: 'github-credentials-id',
     gitRepoUrl: '[https://github.com/your-username/your-repo.git](https://github.com/your-username/your-repo.git)'
 )
+
+_________________________________________________________________________
+
 5. Utility
 clean_ws()
 Cleans up the Jenkins workspace.
 
-Groovy
 clean_ws()
-🚀 Quick Starter Template (Copy & Paste)
-If you are starting a new project, just copy this Jenkinsfile template to your application's root directory, change the environment variables, and you are good to go!
 
-Groovy
-@Library('my-shared-library') _
+__________________________________________________________________________
+
+🚀 Quick Starter Template (Copy & Paste)
+
+If you are starting a new project with build, push, test, deploy just copy this Jenkinsfile template to your application's root directory, change the environment variables, and you are good to go!
+
+@Library('NAME') _
 
 pipeline {
-    agent any // OR agent { label 'whtr' }
+    agent any  OR agent { label 'AGENT-NAME' }
     
     environment {
-        // ✏️ UPDATE THESE VARIABLES FOR YOUR NEW PROJECT
-        GIT_URL = '[https://github.com/Wajahathr/your-new-app.git](https://github.com/Wajahathr/your-new-app.git)'
-        GIT_BRANCH = 'main'
-        DOCKERHUB_CREDENTIALS = '1' // Your credentials ID in Jenkins
-        IMAGE_NAME = 'wajahathr/your-new-app'
+        GIT_URL = 'GIT-REPO-URL'
+        GIT_BRANCH = 'Branch-Name'
+        DOCKERHUB_CREDENTIALS = 'ID' // Your credentials ID in Jenkins
+        IMAGE_NAME = 'DOCKER-USERNAME/your-new-app'
         IMAGE_TAG = "${env.BUILD_NUMBER}"
     }
 
