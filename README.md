@@ -1,6 +1,20 @@
-**TEMPLATES**
+# Jenkins Shared Library 🚀
 
-1. Docker Operations
+This repository contains reusable Jenkins pipeline functions (Shared Libraries) to make writing Declarative Pipelines faster, cleaner, and DRY (Don't Repeat Yourself).
+
+## 📦 Available Functions
+
+Here is the list of all available functions in this library and how to call them in your `Jenkinsfile`.
+
+1. Source Code Management
+
+**`code_checkout(String GitUrl, String GitBranch)`**
+Pulls code from the specified Git repository.
+```groovy
+code_checkout('[https://github.com/your-username/your-repo.git](https://github.com/your-username/your-repo.git)', 'main')
+
+2. **Docker Operations**
+
 docker_build(Map config)
 Builds a Docker image.
 
@@ -25,8 +39,7 @@ Deploys the application using docker compose (downs old containers and brings up
 
 docker_compose()
 
-
-2. Security & Code Quality (DevSecOps)
+3. Security & Code Quality (DevSecOps)
 
 sonarqube_analysis(String SonarQubeAPI, String Projectname, String ProjectKey)
 Runs SonarQube code quality analysis. (Requires SonarQube environment configured in Jenkins).
@@ -43,11 +56,11 @@ Runs OWASP Dependency-Check to find vulnerable dependencies.
 
 owasp_dependency()
 
-
-3. Kubernetes Operations
+4. Kubernetes Operations
 update_k8s_manifests(Map config)
 Updates the image tag in Kubernetes deployment YAML files and pushes the changes back to GitHub.
 
+Groovy
 update_k8s_manifests(
     imageFullName: 'your-dockerhub-user/app-name',
     imageTag: env.BUILD_NUMBER,
@@ -56,26 +69,27 @@ update_k8s_manifests(
     gitCredentials: 'github-credentials-id',
     gitRepoUrl: '[https://github.com/your-username/your-repo.git](https://github.com/your-username/your-repo.git)'
 )
-
-4. Utility
+5. Utility
 clean_ws()
 Cleans up the Jenkins workspace.
 
+Groovy
 clean_ws()
+🚀 Quick Starter Template (Copy & Paste)
+If you are starting a new project, just copy this Jenkinsfile template to your application's root directory, change the environment variables, and you are good to go!
 
-**EXAMPLE**
-
-@Library('NAME') _
+Groovy
+@Library('my-shared-library') _
 
 pipeline {
-    agent any // OR agent { label 'AGENT-NAME' }
+    agent any // OR agent { label 'whtr' }
     
     environment {
         // ✏️ UPDATE THESE VARIABLES FOR YOUR NEW PROJECT
-        GIT_URL = 'YOUR GIT-REPO URL'
-        GIT_BRANCH = 'BRANCH'
-        DOCKERHUB_CREDENTIALS = 'ID' // Your credentials ID in Jenkins
-        IMAGE_NAME = 'DOCKER_USER/IMAGE-NAME'
+        GIT_URL = '[https://github.com/Wajahathr/your-new-app.git](https://github.com/Wajahathr/your-new-app.git)'
+        GIT_BRANCH = 'main'
+        DOCKERHUB_CREDENTIALS = '1' // Your credentials ID in Jenkins
+        IMAGE_NAME = 'wajahathr/your-new-app'
         IMAGE_TAG = "${env.BUILD_NUMBER}"
     }
 
